@@ -2,9 +2,10 @@
 
 ![](figure/sokoban.webp)
 
-This repository is to make the deep learnign based AI for sokoban env
+This repository is to develop RL algorithms for sokoban env
 
-The env setup will be based on the ai based environment
+I A-start algorithm is for benchmark and test if the result is possible.
+
 
 # Things to do:
 - [x] get the state of the all the boxes and worker
