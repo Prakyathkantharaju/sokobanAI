@@ -4,7 +4,7 @@
 
 This repository is to develop RL algorithms for sokoban env
 
-I A-start algorithm is for benchmark and test if the result is possible.
+A-start algorithm is for benchmark and test if the result is possible.
 
 
 # Things to do:
