@@ -1,6 +1,7 @@
 # Sokoban ai
 
 ![](figure/sokoban.webp)
+
 This repository is to make the deep learnign based AI for sokoban env
 
 The env setup will be based on the ai based environment
