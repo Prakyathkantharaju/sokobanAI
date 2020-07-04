@@ -15,8 +15,12 @@ from Agents.cost_functions.cost import MSE
 env_name = 'Sokoban-v0'
 env = gym.make(env_name)
 
+mse = MSE()
+env.OBSERVATION_SPACE = 1
+env.ACTION_SPACE = 8
 ACTION_LOOKUP = env.unwrapped.get_action_lookup()
 print("Created environment: {}".format(env_name))
+print(ACTION_LOOKUP)
 
 for i_episode in range(1):#20
     observation = env.reset()
@@ -31,9 +35,10 @@ for i_episode in range(1):#20
 
         print(ACTION_LOOKUP[action], reward, done, info)
         wall,goals,boxes,player = observation[0],observation[1],observation[2],observation[3]
-        print(np.argwhere(player == 1))
-        print(np.argwhere(goals == 1))
-        print(np.argwhere(boxes == 1))
+        player = np.argwhere(player == 1)
+        goals = np.argwhere(goals == 1)
+        boxes = np.argwhere(boxes == 1)
+        print(mse.evaluate(goals,boxes, player))
         if done:
             print("Episode finished after {} timesteps".format(t+1))
             env.render()
