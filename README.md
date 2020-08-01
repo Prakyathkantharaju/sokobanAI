@@ -11,8 +11,8 @@ A-start algorithm is for benchmark and test if the result is possible.
 - [x] get the state of the all the boxes and worker
 - [x] get weight euclidian, manhattan, etc
 - [ ] write the A star function for baseline measurement
-- [ ] write DQN algorithm
-- [ ] write DDQN algorithm
+- [x] write DQN algorithm
+- [x] write DDQN algorithm
 - [ ] write DDPG etc
 
 # dependencies:
