@@ -66,8 +66,9 @@ class Agent():
 
     def store_transition(self, state, action, reward, new_state, done):
         self.memory.store_transition(state, action, reward, new_state, done)
-
     def choose_action(self, observation,test = False):
+
+
         if not test:
                 if np.random.random() < self.epsilon:
                     action = np.random.choice(self.action_space)
@@ -94,13 +95,10 @@ class Agent():
 
         q_eval = self.q_eval.predict(states)
         q_next = self.q_eval.predict(states_)
-
-
         q_target = np.copy(q_eval)
         batch_index = np.arange(self.batch_size, dtype=np.int32)
-
         q_target[batch_index, actions] = rewards + \
-                        self.gamma * np.max(q_next, axis=1)*dones
+                        self.gamma * np.max(q_next, axis=1) * dones
 
         #  print(self.learning_rate())
         self.q_eval.train_on_batch(states, q_target)
