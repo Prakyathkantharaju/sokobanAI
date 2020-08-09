@@ -62,4 +62,3 @@ def Search_tree(old_state,new_state):
             return True, curr_child
         queue.pop(0)
     return False, match
-
