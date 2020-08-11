@@ -7,12 +7,18 @@ import numpy as np
 # - Match_state: function to return true is states are matched
 
 class State(object):
+    """State."""
+
     '''
     state class
     to have child, parent and occurance information
     also can add weight
     '''
     def __init__(self, state):
+        """__init__.
+
+        :param state:
+        """
         self.parent = []
         self.child = []
         self.state = state
@@ -32,6 +38,9 @@ class State(object):
 
     def add_reward(self, reward):
         self.reward.append(reward)
+
+    def add_roomstate(self, room_state):
+        self.room_state = room_state
 
 def Match_state(state1,state2):
     '''
