@@ -33,6 +33,12 @@ class MCTS(object):
         list_of_actions = self._valid_action(parent_state, room_state)
         self.expand(list_of_actions, parent_state)
 
+    def main_mcts(self):
+        # first I need to expand
+         # till you reach the terminal state or no childen
+        pass
+
+
     def expand(self,list_of_actions, state):
         self.expantion += 1
         # do till the there are no possible action or ten children
@@ -42,26 +48,30 @@ class MCTS(object):
             new_state.room_state = self.env.room_state
             state.add_child(State(self.env.get_state()))
             list_of_actions.pop(0)
+        return state
 
 
     def _valid_action(self, state, raw_state):
         # simulate throught all the 8 actions and select the best one
         parent_state = state
-        save_state = copy.deepcopy(raw_state)
+        save_state = np.copy(raw_state)
+        test_ =np.copy( save_state)
+        print(np.where(test_ == 5))
         possible_actions = [i for i in range(1,9)]
         for i in range(1,9):
             action = i
-            self.env.room_state = save_state
-            print('\n')
-            print(self.env.room_state,'\n', save_state)
-            print('\n')
+            print('action:',i)
+            self.env.update_room_state(test_)
             observation, reward, done, info = self.env.step(action, weight_method = 'custom')
             child_state = self.env.get_state()
             child_state = State(child_state)
+
             if Match_state(parent_state,child_state):
-                possible_actions.pop(i)
+                # print(parent_state.state, child_state.state)
+                possible_actions.remove(i)
                 print(i)
-                parent_state.add_child(child_state)
+                parent_state.add_child(child_state, i)
+
             time.sleep(2)
             self.env.render()
         print(possible_actions)

@@ -20,14 +20,14 @@ class State(object):
         :param state:
         """
         self.parent = []
-        self.child = []
+        self.child = {}
         self.state = state
         self.visit = 0
         self.reward = []
         self.terminal = True
 
-    def add_child(self, child):
-        self.child.append(child)
+    def add_child(self, child, action):
+        self.child[action] = child
         self.terminal = False
 
     def add_parent(self, parent):
