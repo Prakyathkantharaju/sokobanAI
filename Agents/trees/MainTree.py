@@ -24,11 +24,9 @@ class State(object):
         self.state = state
         self.visit = 0
         self.reward = []
-        self.terminal = True
 
     def add_child(self, child, action):
         self.child[action] = child
-        self.terminal = False
 
     def add_parent(self, parent):
         self.parent.append(parent)
@@ -41,6 +39,12 @@ class State(object):
 
     def add_roomstate(self, room_state):
         self.room_state = room_state
+
+    def expanded(self):
+        if len(self.child.values()) == 0:
+            return True
+        else:
+            return False
 
 def Match_state(state1,state2):
     '''
