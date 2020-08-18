@@ -1,13 +1,13 @@
 # Main Monte carlo tree search file
-import collections
+import collections, math
 import gym
 import numpy as np
-import gym_sokoban, copy
+import gym_sokoban, copy, random
 import time, os, sys
-from Agents.utils import MinMaxStats
-
 print(os.getcwd())
 sys.path.append('/home/prakyath/gitfolder/sokoban/')
+from Agents.utils import MinMaxStats
+
 # relative imports
 from Agents.cost_functions.cost import MSE
 from Agents.trees.MainTree import State, Match_state
@@ -33,26 +33,52 @@ class MCTS(object):
         parent_state.add_roomstate(room_state)
         print(room_state)
         parent_state = self.expand(parent_state, room_state)
+        self.main_mcts(parent_state)
 
     def main_mcts(self, root):
+
+        min_max_bounds = MinMaxStats(KnownBounds)
         for i in range(10):
             node = root
             search_path = [node]
-
-            min_max_bounds = MinMaxStats(KnownBounds)
+            action_history = []
             while not(node.expanded()):
-                action, node = self.select_child(node, min_max_stats)
-        # first I need to expand
-         # till you reach the terminal state or no childen
-        pass
+                action, node = self.select_child(node, min_max_bounds)
+                search_path.append(node)
+                action_history.append(action)
+
+            parent = search_path[-2]
+            room_state = node.get_roomstate()
+            node = self.expand(node, room_state)
+            self.backprop(search_path, min_max_bounds)
 
 
     def select_child(self, node, min_max_stats):
         if node.visit == 0:
-            return random.sample(node.child.items(), 1][0]
+            return random.sample(node.child.items(), 1)[0]
+        else:
+            _, action, child = \
+            max((ucb_score(node, child, min_max_stats), action, child) \
+                for action , child in node.children.item())
+            return action , child
+
+    def backprop(self, search_path, min_max_stats):
+        value = 0
+        for node in search_path[::-1]:
+            node.sum_reward += value
+            min_max_stats.update(node.value())
+            value = node.value() + 0.99 * value
+            node.add_vist()
 
 
-        _, action, child = max(
+
+    def ucb_score(self, parent, child, min_max_stats):
+        pb_c = math.log((parent.visit + 19652 + 1) / 19652) + 1.25
+        pb_c *= math.sqrt(parent.visit) / (child.visit + 1)
+
+        prior_score = pd_c * child.prior
+        value_score = min_max_stats.normalize(child.value())
+        return prior_score + value_score
 
     def expand_old(self,list_of_actions, state):
         self.expantion += 1
@@ -71,7 +97,7 @@ class MCTS(object):
         parent_state = state
         player_position = np.copy(self.env.player_position)
         save_state = np.copy(raw_state)
-        test_ =np.copy( save_state)
+        test_ = np.copy(save_state)
         print(np.where(test_ == 5))
         possible_actions = [i for i in range(1,9)]
         for i in range(1,9):
@@ -79,11 +105,13 @@ class MCTS(object):
             print('*'*25)
             print('action:',i)
             self.env.update_room_state(test_, player_position)
-            observation, reward, done, info = self.env.step(action, weight_method = 'custom')
+            observation, reward, done, info = self.env.step(action,player_position,weight_method = 'custom')
             child_state = self.env.get_state()
             child_state = State(child_state)
+            child_state.add_reward(reward)
+            child_state.add_roomstate(np.copy(self.env.room_state))
+            print(player_position)
             parent_state.add_child(child_state, i)
-            time.sleep(2)
             self.env.render()
         return state
 

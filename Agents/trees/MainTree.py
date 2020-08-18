@@ -24,6 +24,8 @@ class State(object):
         self.state = state
         self.visit = 0
         self.reward = []
+        self.sum_reward = 0
+        self.prior = 0
 
     def add_child(self, child, action):
         self.child[action] = child
@@ -39,6 +41,12 @@ class State(object):
 
     def add_roomstate(self, room_state):
         self.room_state = room_state
+
+    def get_roomstate(self):
+        return np.copy(self.room_state)
+
+    def value(self):
+        return self.reward[-1]
 
     def expanded(self):
         if len(self.child.values()) == 0:
