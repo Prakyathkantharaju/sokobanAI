@@ -23,7 +23,7 @@ class State(object):
         self.child = {}
         self.state = state
         self.visit = 0
-        self.reward = []
+        self.reward = [0]
         self.sum_reward = 0
         self.prior = 0
 

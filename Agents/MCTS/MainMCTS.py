@@ -12,6 +12,7 @@ from Agents.utils import MinMaxStats
 from Agents.cost_functions.cost import MSE
 from Agents.trees.MainTree import State, Match_state
 KnownBounds = collections.namedtuple('KnownBounds', ['min', 'max'])
+
 class MCTS(object):
     def __init__(self):
         env_name = 'Sokoban-v0'
@@ -36,8 +37,7 @@ class MCTS(object):
         self.main_mcts(parent_state)
 
     def main_mcts(self, root):
-
-        min_max_bounds = MinMaxStats(KnownBounds)
+        min_max_bounds = MinMaxStats(None)
         for i in range(10):
             node = root
             search_path = [node]
@@ -46,7 +46,6 @@ class MCTS(object):
                 action, node = self.select_child(node, min_max_bounds)
                 search_path.append(node)
                 action_history.append(action)
-
             parent = search_path[-2]
             room_state = node.get_roomstate()
             node = self.expand(node, room_state)
@@ -59,7 +58,7 @@ class MCTS(object):
         else:
             _, action, child = \
             max((ucb_score(node, child, min_max_stats), action, child) \
-                for action , child in node.children.item())
+                for action , child in node.child.items())
             return action , child
 
     def backprop(self, search_path, min_max_stats):
@@ -68,7 +67,7 @@ class MCTS(object):
             node.sum_reward += value
             min_max_stats.update(node.value())
             value = node.value() + 0.99 * value
-            node.add_vist()
+            node.add_visit()
 
 
 
@@ -103,7 +102,7 @@ class MCTS(object):
         for i in range(1,9):
             action = i
             print('*'*25)
-            print('action:',i)
+            print('action:',i, player_position)
             self.env.update_room_state(test_, player_position)
             observation, reward, done, info = self.env.step(action,player_position,weight_method = 'custom')
             child_state = self.env.get_state()

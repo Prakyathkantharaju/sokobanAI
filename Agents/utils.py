@@ -1,3 +1,7 @@
+
+
+MAXIMUM_FLOAT_VALUE = float('inf')
+
 class MinMaxStats(object):
     """A class that holds the min-max values of the tree."""
     def __init__(self, known_bounds):
