@@ -17,6 +17,7 @@ class MSE(cost):
         self.no_of_goals = no_of_goals
 
     def evaluate(self,goals, box, player):
+        print('cost function',len(goals), len(box), len(player))
         weight = 0
         if self.type == 'SUM':
             # remove FOR loops (OMG I am so bad)

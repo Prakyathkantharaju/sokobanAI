@@ -1,8 +1,9 @@
 # Main Monte carlo tree search file
 import collections, math
-import gym, time
+import gym
 import numpy as np
 import gym_sokoban, copy, random
+from gym_sokoban import ACTION_LOOKUP
 import time, os, sys
 print(os.getcwd())
 sys.path.append('/home/prakyath/gitfolder/sokoban/')
@@ -34,29 +35,15 @@ class MCTS(object):
         parent_state.add_roomstate(room_state)
         print(room_state)
         parent_state = self.expand(parent_state, room_state)
-        for i in range(1):
-            self.main_mcts(parent_state)
-            action, child_ = max(parent_state.child.items(), key = lambda item: item[1].visit)
-            for action_list,child in parent_state.child.items():
-                print(action_list,child.visit, 'action and child count')
-            print(action)
-            player_position = np.copy(self.env.player_position)
-            print('before')
-            print(self.env.room_state)
-            observation, reward, done, info = self.env.step(action,player_position,weight_method = 'custom')
-            print('after state')
-            print(self.env.room_state)
-            child_state = self.env.get_state()
-            child_state = State(child_state)
-            # parent_room_state = np.copy(self.env.room_state)
-            #parent_state = self.expand(parent_state,parent_room_state)
-            print(self.env.get_action_lookup())
-            time.sleep(1)
+        self.main_mcts(parent_state)
+        action,_ = max(parent_state.child.items(), key = lambda item: item[1].visit)
+        for action,child in parent_state.child.items():
+            print(action,child.visit, 'action and child count')
         input('test')
 
     def main_mcts(self, root):
         min_max_bounds = MinMaxStats(None)
-        for i in range(100):
+        for i in range(10):
             node = root
             search_path = [node]
             action_history = []
@@ -64,6 +51,7 @@ class MCTS(object):
                 action, node = self.select_child(node, min_max_bounds)
                 search_path.append(node)
                 action_history.append(action)
+                print(action)
             parent = search_path[-2]
             room_state = node.get_roomstate()
             node = self.expand(node, room_state)
@@ -78,6 +66,7 @@ class MCTS(object):
             t, action, child = \
             max((self.ucb_score(node, child, min_max_stats), action, child) \
                 for action , child in node.child.items())
+            print(t, action, child)
             return action , child
 
     def backprop(self, search_path, min_max_stats):
