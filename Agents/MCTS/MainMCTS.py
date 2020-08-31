@@ -34,13 +34,16 @@ class MCTS(object):
         parent_state.add_roomstate(room_state)
         print(room_state)
         parent_state = self.expand(parent_state, room_state)
-        for i in range(1):
-            self.main_mcts(parent_state)
-            action, child_ = max(parent_state.child.items(), key = lambda item: item[1].visit)
-            for action_list,child in parent_state.child.items():
+        state_list = [parent_state]
+        for i in range(100):
+            current_state = state_list[-1]
+            self.main_mcts(current_state)
+            action, child_ = max(current_state.child.items(), key = lambda item: item[1].visit)
+            for action_list,child in current_state.child.items():
                 print(action_list,child.visit, 'action and child count')
             print(action)
             player_position = np.copy(self.env.player_position)
+            self.env.update_room_state(np.copy(room_state))
             print('before')
             print(self.env.room_state)
             observation, reward, done, info = self.env.step(action,player_position,weight_method = 'custom')
@@ -48,11 +51,13 @@ class MCTS(object):
             print(self.env.room_state)
             child_state = self.env.get_state()
             child_state = State(child_state)
-            # parent_room_state = np.copy(self.env.room_state)
-            #parent_state = self.expand(parent_state,parent_room_state)
+            child_state.add_roomstate(np.copy(self.env.room_state))
+            room_state = np.copy(self.env.room_state)
+            child_state = self.expand(child_state,room_state)
+            state_list.append(child_state)
+            time.sleep(3)
             print(self.env.get_action_lookup())
-            time.sleep(1)
-        input('test')
+        # input('test')
 
     def main_mcts(self, root):
         min_max_bounds = MinMaxStats(None)
@@ -60,10 +65,14 @@ class MCTS(object):
             node = root
             search_path = [node]
             action_history = []
+            counter = 0
             while not(node.expanded()):
                 action, node = self.select_child(node, min_max_bounds)
                 search_path.append(node)
                 action_history.append(action)
+                # if node.expanded() == True:
+                    # print(node.get_roomstate())
+                    # print(len(node.child.values()))
             parent = search_path[-2]
             room_state = node.get_roomstate()
             node = self.expand(node, room_state)
@@ -113,16 +122,18 @@ class MCTS(object):
     def expand(self, state, raw_state):
         # simulate throught all the 8 actions and select the best one
         parent_state = state
-        player_position = np.copy(self.env.player_position)
-        save_state = np.copy(raw_state)
-        test_ = np.copy(save_state)
+        player_position = self.env.get_player()
+        # print('player',player_position.shape)
+        save_state = copy.deepcopy(raw_state)
+        test_ = copy.deepcopy(save_state)
+        list_state = save_state.tolist()
         # print(np.where(test_ == 5))
         possible_actions = [i for i in range(1,9)]
         for i in range(1,9):
             action = i
-            # print('*'*25)
-            # print('action:',i, player_position)
-            self.env.update_room_state(test_, player_position)
+            # print('action:',i)
+            # print('actual player position', np.where(test_ == 5), np.where(save_state == 5),np.where(np.array(list_state) == 5))
+            self.env.update_room_state(test_)
             observation, reward, done, info = self.env.step(action,player_position,weight_method = 'custom')
             child_state = self.env.get_state()
             child_state = State(child_state)
