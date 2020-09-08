@@ -26,8 +26,12 @@ class MCTS(object):
         # expansion counter
         self.expantion = 0
 
+        # term to penalize the if the same state is achieved again and again.
+        self.cost_append = 0
+
     def run(self):
         # Main run function to controll all the MCTS
+        # TODO: move left is not working
         parent_state = self.env.get_state()
         parent_state = State(parent_state)
         room_state = self.env.room_state
@@ -57,17 +61,27 @@ class MCTS(object):
             state_list.append(child_state)
             time.sleep(3)
             print(self.env.get_action_lookup())
+            if Match_state(state_list[-1],state_list[-2]) :
+                self.cost_append += 1
+            else:
+                self.cost_append = 0
         # input('test')
 
     def main_mcts(self, root):
         min_max_bounds = MinMaxStats(None)
+        # eenforced exploration
+        epsilon = np.random.randint(20, size = 20)
+        print(epsilon)
         for i in range(100):
             node = root
             search_path = [node]
             action_history = []
             counter = 0
             while not(node.expanded()):
-                action, node = self.select_child(node, min_max_bounds)
+                if i in epsilon:
+                    action,node = self.select_child(node, min_max_bounds, explore = True)
+                else:
+                    action, node = self.select_child(node, min_max_bounds)
                 search_path.append(node)
                 action_history.append(action)
                 # if node.expanded() == True:
@@ -80,8 +94,8 @@ class MCTS(object):
 
 
 
-    def select_child(self, node, min_max_stats):
-        if node.visit == 0:
+    def select_child(self, node, min_max_stats, explore = False):
+        if node.visit == 0 or random == True:
             return random.sample(node.child.items(), 1)[0]
         else:
             t, action, child = \
