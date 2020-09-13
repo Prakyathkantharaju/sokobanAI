@@ -7,6 +7,7 @@ import time, os, sys
 print(os.getcwd())
 sys.path.append('/home/prakyath/gitfolder/sokoban/')
 from Agents.utils import MinMaxStats
+from Agents.MCTS.utils import Match_goal_box
 
 # relative imports
 from Agents.cost_functions.cost import MSE
@@ -29,11 +30,15 @@ class MCTS(object):
         # term to penalize the if the same state is achieved again and again.
         self.cost_append = 0
 
+        # action stuck
+        self.action_stuck = []
+
     def run(self):
         # Main run function to controll all the MCTS
         # TODO: move left is not working
         parent_state = self.env.get_state()
         parent_state = State(parent_state)
+        previous_state = parent_state
         room_state = self.env.room_state
         parent_state.add_roomstate(room_state)
         print(room_state)
@@ -50,7 +55,7 @@ class MCTS(object):
             self.env.update_room_state(np.copy(room_state))
             print('before')
             print(self.env.room_state)
-            observation, reward, done, info = self.env.step(action,player_position,weight_method = 'custom')
+            observation, reward, done, info = self.env.step(action,player_position,weight_method = 'custom', print_ = True)
             print('after state')
             print(self.env.room_state)
             child_state = self.env.get_state()
@@ -59,18 +64,32 @@ class MCTS(object):
             room_state = np.copy(self.env.room_state)
             child_state = self.expand(child_state,room_state)
             state_list.append(child_state)
-            time.sleep(3)
+            time.sleep(1)
             print(self.env.get_action_lookup())
-            if Match_state(state_list[-1],state_list[-2]) :
-                self.cost_append += 1
+            if Match_goal_box(previous_state,child_state):
+                current_state.add_reward(-100)
+                self.action_stuck = [action]
+                rand_action = np.random.randint(1,8)
+                print('applying random action',rand_action)
+                observation, reward, done, info = self.env.step(rand_action,player_position,weight_method = 'custom', print_ = True)
+                print('after state')
+                print(self.env.room_state)
+                child_state = self.env.get_state()
+                child_state = State(child_state)
+                child_state.add_roomstate(np.copy(self.env.room_state))
+                room_state = np.copy(self.env.room_state)
+                child_state = self.expand(child_state,room_state)
+                state_list.append(child_state)
             else:
                 self.cost_append = 0
+            self.env.render()
+            previous_state = child_state
         # input('test')
 
     def main_mcts(self, root):
         min_max_bounds = MinMaxStats(None)
         # eenforced exploration
-        epsilon = np.random.randint(20, size = 20)
+        epsilon = np.random.randint(80, size = 80)
         print(epsilon)
         for i in range(100):
             node = root
@@ -93,9 +112,8 @@ class MCTS(object):
             self.backprop(search_path, min_max_bounds)
 
 
-
     def select_child(self, node, min_max_stats, explore = False):
-        if node.visit == 0 or random == True:
+        if node.visit == 0 or explore  == True:
             return random.sample(node.child.items(), 1)[0]
         else:
             t, action, child = \
@@ -110,8 +128,6 @@ class MCTS(object):
             min_max_stats.update(node.value())
             value = node.value() + 0.99 * value
             node.add_visit()
-
-
 
     def ucb_score(self, parent, child, min_max_stats):
         pb_c = math.log((parent.visit + 19652 + 1) / 19652) + 1.25
@@ -148,22 +164,19 @@ class MCTS(object):
             # print('action:',i)
             # print('actual player position', np.where(test_ == 5), np.where(save_state == 5),np.where(np.array(list_state) == 5))
             self.env.update_room_state(test_)
-            observation, reward, done, info = self.env.step(action,player_position,weight_method = 'custom')
+            observation, reward, done, info = self.env.step(action,player_position,weight_method = 'custom',
+                                                            observation_mode = 'raw')
             child_state = self.env.get_state()
             child_state = State(child_state)
             child_state.add_reward(reward)
             child_state.add_roomstate(np.copy(self.env.room_state))
             # print(player_position)
             parent_state.add_child(child_state, i)
-            self.env.render()
+            # self.env.render()
         return state
 
     def _calculate_cost(self, state):
         state = state.room_state.flatten
-
-
-
-
 
 if "__main__" == __name__:
     main_cts = MCTS()
